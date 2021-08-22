@@ -1,0 +1,10 @@
+{
+	"id":"TaSC Classic",
+	"name":"TaSC Classic",
+	"version":"5.5.1",
+	"author": "boggled & Co.",
+	"description":"Terraform planets and build stations. Not compatible with standard TaSC",
+	"gameVersion":"0.95a-RC15",
+	"jars":["jar/BoggledTerraformingAndStationConstruction.jar"],
+	"modPlugin":"data.scripts.BoggledStationConstructionPlugin",
+}
