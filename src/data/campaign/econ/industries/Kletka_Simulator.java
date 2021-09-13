@@ -1,66 +1,37 @@
 package data.campaign.econ.industries;
 
 import java.awt.Color;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.econ.*;
-import com.fs.starfarer.api.combat.MutableStat;
-import com.fs.starfarer.api.impl.campaign.DebugFlags;
 import com.fs.starfarer.api.impl.campaign.ids.Conditions;
-import com.fs.starfarer.api.impl.campaign.ids.Factions;
-import com.fs.starfarer.api.impl.campaign.ids.Terrain;
-import com.fs.starfarer.api.impl.campaign.procgen.StarAge;
-import com.fs.starfarer.api.impl.campaign.procgen.StarSystemGenerator;
-import com.fs.starfarer.api.impl.campaign.terrain.BaseTiledTerrain;
-import com.fs.starfarer.api.impl.campaign.terrain.MagneticFieldTerrainPlugin.MagneticFieldParams;
-import com.fs.starfarer.api.ui.Alignment;
-import com.fs.starfarer.api.ui.IconRenderMode;
-import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.impl.campaign.econ.impl.BaseIndustry;
-import com.fs.starfarer.api.impl.campaign.ids.Commodities;
-import com.fs.starfarer.api.impl.campaign.ids.Conditions;
-import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.campaign.LocationAPI;
-import com.fs.starfarer.api.campaign.SectorAPI;
-import com.fs.starfarer.api.campaign.SectorEntityToken;
-import com.fs.starfarer.api.campaign.StarSystemAPI;
-import com.fs.starfarer.api.impl.campaign.CoreCampaignPluginImpl;
-import com.fs.starfarer.api.impl.campaign.CoreScript;
-import com.fs.starfarer.api.impl.campaign.events.CoreEventProbabilityManager;
-import com.fs.starfarer.api.impl.campaign.fleets.DisposableLuddicPathFleetManager;
-import com.fs.starfarer.api.impl.campaign.fleets.DisposablePirateFleetManager;
-import com.fs.starfarer.api.impl.campaign.fleets.EconomyFleetRouteManager;
-import com.fs.starfarer.api.impl.campaign.fleets.MercFleetManagerV2;
-import com.fs.starfarer.api.impl.campaign.ids.Factions;
-import com.fs.starfarer.api.impl.campaign.ids.Terrain;
-import com.fs.starfarer.api.impl.campaign.procgen.NebulaEditor;
-import com.fs.starfarer.api.impl.campaign.terrain.HyperspaceTerrainPlugin;
-import com.fs.starfarer.api.util.Misc;
 import com.fs.starfarer.api.util.Pair;
-import com.fs.starfarer.campaign.CampaignPlanet;
-import data.campaign.econ.BoggledStationConstructionIDs;
-import com.fs.starfarer.api.ui.TooltipMakerAPI;
-import com.fs.starfarer.api.ui.TooltipMakerAPI.StatModValueGetter;
-
-import javax.lang.model.element.Element;
 
 public class Kletka_Simulator extends BaseIndustry
 {
     public boolean canBeDisrupted()
     {
-        return false;
+        return true;
     }
 
     public CargoAPI generateCargoForGatheringPoint(Random random)
     {
-        if (!this.isFunctional())
+        boolean shortage = false;
+        if(Global.getSettings().getBoolean("boggledDomainArchaeologyEnabled"))
+        {
+            Pair<String, Integer> deficit = this.getMaxDeficit("domain_artifacts");
+            if(deficit.two != 0)
+            {
+                shortage = true;
+            }
+        }
+
+        if (!this.isFunctional() || shortage)
         {
             return null;
         }
@@ -70,70 +41,76 @@ public class Kletka_Simulator extends BaseIndustry
             result.clear();
             float roll = random.nextFloat() * 100f;
 
-            if(this.aiCoreId == null)
+            if(this.isImproved())
             {
-                if(roll > 95f)
-                {
-                    result.addCommodity("beta_core", 1f);
-                }
-                else if(roll > 50f)
-                {
-                    result.addCommodity("gamma_core", 1f);
+                if (this.aiCoreId == null) {
+                    if (roll > 85f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else if (roll > 40f) {
+                        result.addCommodity("gamma_core", 1f);
+                    }
+                } else if (this.aiCoreId.equals("alpha_core")) {
+                    if (roll > 65f) {
+                        result.addCommodity("alpha_core", 1f);
+                    } else if (roll > 30f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else {
+                        result.addCommodity("gamma_core", 1f);
+                    }
+                } else if (this.aiCoreId.equals("beta_core")) {
+                    if (roll > 85f) {
+                        result.addCommodity("alpha_core", 1f);
+                    } else if (roll > 50f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else if (roll > 20f) {
+                        result.addCommodity("gamma_core", 1f);
+                    }
+                } else if (this.aiCoreId.equals("gamma_core")) {
+                    if (roll > 90f) {
+                        result.addCommodity("alpha_core", 1f);
+                    } else if (roll > 60f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else if (roll > 35f) {
+                        result.addCommodity("gamma_core", 1f);
+                    }
                 }
             }
-            else if(this.aiCoreId.equals("alpha_core"))
-            {
-                if(roll > 70f)
-                {
-                    result.addCommodity("alpha_core", 1f);
-                }
-                else if(roll > 40f)
-                {
-                    result.addCommodity("beta_core", 1f);
-                }
-                else if(roll > 10f)
-                {
-                    result.addCommodity("gamma_core", 1f);
-                }
-            }
-            else if(this.aiCoreId.equals("beta_core"))
-            {
-                if(roll > 90f)
-                {
-                    result.addCommodity("alpha_core", 1f);
-                }
-                else if(roll > 60f)
-                {
-                    result.addCommodity("beta_core", 1f);
-                }
-                else if(roll > 30f)
-                {
-                    result.addCommodity("gamma_core", 1f);
-                }
-            }
-            else if(this.aiCoreId.equals("gamma_core"))
-            {
-                if(roll > 95f)
-                {
-                    result.addCommodity("alpha_core", 1f);
-                }
-                else if(roll > 70f)
-                {
-                    result.addCommodity("beta_core", 1f);
-                }
-                else if(roll > 45f)
-                {
-                    result.addCommodity("gamma_core", 1f);
+            else {
+                if (this.aiCoreId == null) {
+                    if (roll > 95f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else if (roll > 50f) {
+                        result.addCommodity("gamma_core", 1f);
+                    }
+                } else if (this.aiCoreId.equals("alpha_core")) {
+                    if (roll > 70f) {
+                        result.addCommodity("alpha_core", 1f);
+                    } else if (roll > 40f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else if (roll > 10f) {
+                        result.addCommodity("gamma_core", 1f);
+                    }
+                } else if (this.aiCoreId.equals("beta_core")) {
+                    if (roll > 90f) {
+                        result.addCommodity("alpha_core", 1f);
+                    } else if (roll > 60f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else if (roll > 30f) {
+                        result.addCommodity("gamma_core", 1f);
+                    }
+                } else if (this.aiCoreId.equals("gamma_core")) {
+                    if (roll > 95f) {
+                        result.addCommodity("alpha_core", 1f);
+                    } else if (roll > 70f) {
+                        result.addCommodity("beta_core", 1f);
+                    } else if (roll > 45f) {
+                        result.addCommodity("gamma_core", 1f);
+                    }
                 }
             }
 
             return result;
         }
-    }
-
-    public float getBaseUpkeep() {
-        //This fixes the erroneous upkeep calculation on the industry install page
-        return this.getSpec().getUpkeep();
     }
 
     public void addAlphaCoreDescription(TooltipMakerAPI tooltip, AICoreDescriptionMode mode) {
@@ -190,144 +167,97 @@ public class Kletka_Simulator extends BaseIndustry
         }
     }
 
-    public void applyAICoreToIncomeAndUpkeep() {
-        //Don't reduce upkeep cost if AI core is installed
+    public void applyAICoreToIncomeAndUpkeep()
+    {
+        //Prevent AI cores from modifying income and upkeep
     }
 
-    public void updateAICoreToSupplyAndDemandModifiers() {
-        //There is no supply or demand for this industry, but put this here as a placeholder for if that changes
+    public void updateAICoreToSupplyAndDemandModifiers()
+    {
+        //Prevent AI cores from modifying supply and demand
     }
 
     @Override
-    public void apply() {
-        super.apply(true);
-
+    public void apply()
+    {
         if(Global.getSettings().getBoolean("boggledDomainArchaeologyEnabled"))
         {
-            this.demand(0, "domain_artifacts", 4, "Domain-era artifacts demand");
+            this.demand("domain_artifacts", 4);
         }
 
-        this.applyIncomeAndUpkeep(-1f);
-    }
+        super.apply(false);
+        super.applyIncomeAndUpkeep(3);
 
-    public void applyIncomeAndUpkeep(float sizeOverride) {
-        float size = (float)this.market.getSize();
-        if (sizeOverride >= 0.0F) {
-            size = sizeOverride;
-        }
-
-        float sizeMult = getSizeMult(size);
-        sizeMult = 1.0f; //This is the only thing changed about this method. Now the upkeep cost will be constant regardless of colony size.
-        float stabilityMult = this.market.getIncomeMult().getModifiedValue();
-        float upkeepMult = this.market.getUpkeepMult().getModifiedValue();
-        int income = (int)(this.getSpec().getIncome() * sizeMult);
-        if (income != 0) {
-            this.getIncome().modifyFlatAlways("ind_base", (float)income, "Base value");
-            this.getIncome().modifyMultAlways("ind_stability", stabilityMult, "Market income multiplier");
-        } else {
-            this.getIncome().unmodifyFlat("ind_base");
-            this.getIncome().unmodifyMult("ind_stability");
-        }
-
-        int upkeep = (int)(this.getSpec().getUpkeep() * sizeMult);
-        if (upkeep != 0) {
-            this.getUpkeep().modifyFlatAlways("ind_base", (float)upkeep, "Base value");
-            this.getUpkeep().modifyMultAlways("ind_hazard", upkeepMult, "Market upkeep multiplier");
-        } else {
-            this.getUpkeep().unmodifyFlat("ind_base");
-            this.getUpkeep().unmodifyMult("ind_hazard");
-        }
-
-        if(Global.getSettings().getBoolean("boggledDomainArchaeologyEnabled"))
+        if(Global.getSettings().getBoolean("boggledKletkaSimulatorTemperatureBasedUpkeep"))
         {
-            float domainArtifactDeficitMult = 1.0f;
-            Pair<String, Integer> deficit = this.getMaxDeficit(new String[]{"domain_artifacts"});
-            if(deficit.two > 0)
+            MarketAPI market = this.market;
+            LinkedHashSet<String> suppCond = market.getSuppressedConditions();
+            if(market.hasCondition("very_cold"))
             {
-                domainArtifactDeficitMult = domainArtifactDeficitMult + (.25f * deficit.two);
-                this.getUpkeep().modifyMultAlways("ind_domain_artifact_deficit", domainArtifactDeficitMult, "Domain-era artifacts deficit");
+                if(!suppCond.contains(Conditions.VERY_COLD))
+                {
+                    getUpkeep().modifyMult("temperature", 0.25f, "Extreme cold");
+                }
+                else
+                {
+                    getUpkeep().modifyMult("temperature", 1.0f, "Extreme cold (suppressed)");
+                }
+            }
+            else if(market.hasCondition("cold"))
+            {
+                if(!suppCond.contains(Conditions.COLD))
+                {
+                    getUpkeep().modifyMult("temperature", 0.5f, "Cold");
+                }
+                else
+                {
+                    getUpkeep().modifyMult("temperature", 1.0f, "Cold (suppressed)");
+                }
+            }
+            else if(market.hasCondition("hot"))
+            {
+                if(!suppCond.contains(Conditions.HOT))
+                {
+                    getUpkeep().modifyMult("temperature", 2.0f, "Hot");
+                }
+                else
+                {
+                    getUpkeep().modifyMult("temperature", 1.0f, "Hot (suppressed)");
+                }
+            }
+            else if(market.hasCondition("very_hot"))
+            {
+                if(!suppCond.contains(Conditions.VERY_HOT))
+                {
+                    getUpkeep().modifyMult("temperature", 4.0f, "Extreme heat");
+                }
+                else
+                {
+                    getUpkeep().modifyMult("temperature", 1.0f, "Extreme heat (suppressed)");
+                }
+            }
+            else if(market.getPrimaryEntity().hasTag("station"))
+            {
+                getUpkeep().modifyMult("temperature", 4.0f, "Station");
             }
             else
             {
-                this.getUpkeep().unmodifyMult("ind_domain_artifact_deficit");
+                getUpkeep().unmodifyMult("temperature");
             }
-        }
-
-        if(Global.getSettings().getBoolean("boggledKletkaSimulatorTemperateBasedUpkeep"))
-        {
-            if(this.market.hasCondition("very_cold"))
-            {
-                this.getUpkeep().modifyMultAlways("ind_boggled_temperature", 0.05f, "Temperature modifier");
-            }
-            else if(this.market.hasCondition("cold"))
-            {
-                this.getUpkeep().modifyMultAlways("ind_boggled_temperature", 0.15f, "Temperature modifier");
-            }
-            else if(this.market.hasCondition("hot"))
-            {
-                this.getUpkeep().modifyMultAlways("ind_boggled_temperature", 1.5f, "Temperature modifier");
-            }
-            else if(this.market.hasCondition("very_hot"))
-            {
-                this.getUpkeep().modifyMultAlways("ind_boggled_temperature", 3.0f, "Temperature modifier");
-            }
-            else if(this.market.getPrimaryEntity() != null && this.market.getPrimaryEntity().hasTag("station"))
-            {
-                this.getUpkeep().modifyMultAlways("ind_boggled_temperature", 4.0f, "Station modifier");
-            }
-            else
-            {
-                this.getUpkeep().modifyMultAlways("ind_boggled_temperature", 1.0f, "Temperature modifier");
-            }
-        }
-        else
-        {
-            //Reduces upkeep to compensate for the extremely high value in industries.csv when
-            //temperature modification is disabled
-            this.getUpkeep().modifyMultAlways("ind_boggled_temperature", 0.2f, "Standard reduction");
-        }
-
-        this.applyAICoreToIncomeAndUpkeep();
-        if (!this.isFunctional()) {
-            this.getIncome().unmodifyFlat("ind_base");
-            this.getIncome().unmodifyMult("ind_stability");
-            this.getIncome().unmodifyMult("ind_boggled_temperature");
         }
     }
 
     @Override
-    public void unapply() {
+    public void unapply()
+    {
         super.unapply();
     }
 
-    @Override
-    public void finishBuildingOrUpgrading() {
-        super.finishBuildingOrUpgrading();
-    }
-
-    @Override
-    protected void buildingFinished()
-    {
-        super.buildingFinished();
-
-        this.market.addTag("BOGGLED_KLETKA_SIMULATOR_SHOW_TOOLTIP");
-    }
-
-    @Override
-    public void startBuilding() {
-        super.startBuilding();
-    }
 
     @Override
     public boolean isAvailableToBuild()
     {
-        //Check to ensure non-player factions cannot build this
-        if(this.market.isPlayerOwned() && Global.getSettings().getBoolean("boggledKletkaSimulatorEnabled"))
-        {
-            return true;
-        }
-
-        return false;
+        return Global.getSettings().getBoolean("boggledDomainTechContentEnabled") && Global.getSettings().getBoolean("boggledKletkaSimulatorEnabled");
     }
 
     @Override
@@ -345,58 +275,116 @@ public class Kletka_Simulator extends BaseIndustry
         Color highlight = Misc.getHighlightColor();
         Color bad = Misc.getNegativeHighlightColor();
 
-        if(Global.getSettings().getBoolean("boggledKletkaSimulatorTemperateBasedUpkeep"))
+        if(Global.getSettings().getBoolean("boggledKletkaSimulatorTemperatureBasedUpkeep"))
         {
-            tooltip.addPara("Supercomputers will melt themselves without adequate cooling systems. Operating costs are lowest on very cold worlds and highest on stations.", opad, highlight, new String[]{""});
+            tooltip.addPara("Supercomputers will melt themselves without adequate cooling systems. Operating costs are lowest on very cold worlds and highest on very hot worlds and stations.", opad, highlight, "");
         }
 
-        if(this.isBuilding() || !this.market.hasTag("BOGGLED_KLETKA_SIMULATOR_SHOW_TOOLTIP"))
+        boolean shortage = false;
+        if(Global.getSettings().getBoolean("boggledDomainArchaeologyEnabled"))
+        {
+            Pair<String, Integer> deficit = this.getMaxDeficit("domain_artifacts");
+            if(deficit.two != 0)
+            {
+                shortage = true;
+            }
+        }
+
+        if(mode == IndustryTooltipMode.ADD_INDUSTRY || mode == IndustryTooltipMode.QUEUED || isBuilding())
         {
             return;
         }
+        else if(isDisrupted())
+        {
+            tooltip.addPara("Current chances to produce an AI core at the end of the month: %s", opad, bad, "           None (disrupted)");
+            return;
+        }
+        else if(shortage)
+        {
+            tooltip.addPara("Current chances to produce an AI core at the end of the month: %s", opad, bad, "           None (shortage of Domain-era artifacts)");
+            return;
+        }
 
-        if((this.aiCoreId == null) && this.isFunctional())
+        if(isImproved())
         {
-            tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, new String[]{"5%","45%","50%"});
+            if(this.aiCoreId == null)
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "15%","45%","40%");
+            }
+            else if(this.aiCoreId.equals("gamma_core"))
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "10%","30%","25%","35%");
+            }
+            else if(this.aiCoreId.equals("beta_core"))
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "15%","35%","30%","20%");
+            }
+            else if(this.aiCoreId.equals("alpha_core"))
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "35%","35%","30%","0%");
+            }
         }
-        else if(this.aiCoreId.equals("gamma_core") && this.isFunctional())
+        else
         {
-            tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, new String[]{"5%","25%","25%","45%"});
+            if(this.aiCoreId == null)
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "5%","45%","50%");
+            }
+            else if(this.aiCoreId.equals("gamma_core"))
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "5%","25%","25%","45%");
+            }
+            else if(this.aiCoreId.equals("beta_core"))
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "10%","30%","30%","30%");
+            }
+            else if(this.aiCoreId.equals("alpha_core"))
+            {
+                tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, "30%","30%","30%","10%");
+            }
         }
-        else if(this.aiCoreId.equals("beta_core") && this.isFunctional())
-        {
-            tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, new String[]{"10%","30%","30%","30%"});
-        }
-        else if(this.aiCoreId.equals("alpha_core") && this.isFunctional())
-        {
-            tooltip.addPara("Current chances to produce an AI core at the end of the month:\n" + "Alpha Core: %s\n" + "Beta Core: %s\n" + "Gamma Core: %s\n"  + "Nothing: %s", opad, highlight, new String[]{"30%","30%","30%","10%"});
-        }
-    }
-
-    @Override
-    public void notifyBeingRemoved(MarketAPI.MarketInteractionMode mode, boolean forUpgrade) {
-        super.notifyBeingRemoved(mode, forUpgrade);
-
-        this.market.removeTag("BOGGLED_KLETKA_SIMULATOR_SHOW_TOOLTIP");
     }
 
     protected boolean hasPostDemandSection(boolean hasDemand, IndustryTooltipMode mode)
     {
-        return mode != IndustryTooltipMode.NORMAL || this.isFunctional();
+        return Global.getSettings().getBoolean("boggledDomainArchaeologyEnabled");
     }
 
     protected void addPostDemandSection(TooltipMakerAPI tooltip, boolean hasDemand, IndustryTooltipMode mode)
     {
-        if (mode != IndustryTooltipMode.NORMAL || this.isFunctional())
+        if(Global.getSettings().getBoolean("boggledDomainArchaeologyEnabled"))
         {
             float opad = 10.0F;
             Color highlight = Misc.getHighlightColor();
-            Color bad = Misc.getNegativeHighlightColor();
 
-            if(Global.getSettings().getBoolean("boggledDomainArchaeologyEnabled"))
-            {
-                tooltip.addPara("Kletka Simulators always demand %s Domain-era artifacts regardless of market size.", opad, highlight, new String[]{"4"});
-            }
+            tooltip.addPara("Kletka Simulators always demand %s Domain-era artifacts regardless of market size.", opad, highlight, "4");
         }
+    }
+
+    @Override
+    public boolean canImprove() {
+        return true;
+    }
+
+    protected void applyImproveModifiers()
+    {
+        //Handled above in the cargo function
+    }
+
+    public void addImproveDesc(TooltipMakerAPI info, ImprovementDescriptionMode mode) {
+        float opad = 10f;
+        Color highlight = Misc.getHighlightColor();
+
+        if (mode == ImprovementDescriptionMode.INDUSTRY_TOOLTIP)
+        {
+            info.addPara("AI core training methodology improved.", 0f, highlight, "");
+        }
+        else
+        {
+            info.addPara("Improves AI core training methodology.", 0f, highlight, "");
+        }
+
+        info.addSpacer(opad);
+        super.addImproveDesc(info, mode);
     }
 }

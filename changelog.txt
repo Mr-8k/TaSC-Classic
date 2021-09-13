@@ -1,0 +1,6 @@
+5.5.2
+-Kletka sims can now be improved, ported heat functionality from live. Disabled by default (as it was in 5.0.0)
+-Kletka sims upkeep reduced to 64 (live equivalent) from 300 (!!!)
+
+5.5.1
+-initial port
