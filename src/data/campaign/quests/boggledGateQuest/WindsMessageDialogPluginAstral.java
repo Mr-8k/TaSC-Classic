@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
+import static data.scripts.BoggledStationConstructionPlugin.hasSkillOverhaul;
+
 public class WindsMessageDialogPluginAstral implements InteractionDialogPlugin
 {
     protected InteractionDialogAPI dialog;
@@ -249,20 +251,25 @@ public class WindsMessageDialogPluginAstral implements InteractionDialogPlugin
     private void maxOutSkills(PersonAPI person)
     {
         person.getStats().setSkillLevel("helmsmanship",2);
-        person.getStats().setSkillLevel("strike_commander",2);
-        person.getStats().setSkillLevel("target_analysis",2);
-        person.getStats().setSkillLevel("point_defense",2);
+        person.getStats().setSkillLevel("combat_endurance",2);
         person.getStats().setSkillLevel("impact_mitigation",2);
-        person.getStats().setSkillLevel("ranged_specialization",2);
-        person.getStats().setSkillLevel("shield_modulation",2);
-        person.getStats().setSkillLevel("phase_mastery",2);
-        person.getStats().setSkillLevel("phase_mastery",2);
+        person.getStats().setSkillLevel("damage_control",2);
+        person.getStats().setSkillLevel("field_modulation",2);
+        person.getStats().setSkillLevel("point_defense",2);
+        person.getStats().setSkillLevel("target_analysis",2);
+        person.getStats().setSkillLevel("ballistic_mastery",2);
         person.getStats().setSkillLevel("systems_expertise",2);
         person.getStats().setSkillLevel("missile_specialization",2);
+
         person.getStats().setSkillLevel("gunnery_implants",2);
         person.getStats().setSkillLevel("energy_weapon_mastery",2);
-        person.getStats().setSkillLevel("damage_control",2);
-        person.getStats().setSkillLevel("reliability_engineering",2);
+
+        person.getStats().setSkillLevel("ordnance_expert",2);
+        person.getStats().setSkillLevel("polarized_armor",2);
+
+        if (hasSkillOverhaul)
+            person.getStats().setSkillLevel("ordinance_modification",2);
+
     }
 
     enum OptionId

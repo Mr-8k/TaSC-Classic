@@ -30,6 +30,14 @@ import java.util.Iterator;
 
 public class BoggledStationConstructionPlugin extends BaseModPlugin
 {
+
+    public static boolean hasSkillOverhaul;
+
+    @Override
+    public void onApplicationLoad() {
+        hasSkillOverhaul = Global.getSettings().getModManager().isModEnabled("ESP_Skill_Overhaul");
+    }
+
     public void applyStationSettingsToAllStationsInSector()
     {
         if(Global.getSettings().getBoolean("boggledApplyStationSettingsToAllStationsInSector"))

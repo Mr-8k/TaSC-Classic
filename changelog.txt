@@ -1,4 +1,5 @@
 5.5.3
+-Compatibility for 0.95.1a and new Skill Overhaul
 -Orbital reflectors now suppress Cold, in addition to poor light and hot
 
 5.5.2
