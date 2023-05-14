@@ -157,7 +157,7 @@ public class boggledObjectivePrintDescription extends BaseCommandPlugin
             temp.addTag(tag);
         }
 
-        plugin.init(temp, (Object)null);
+        plugin.init(temp, null);
         boolean objective = this.entity.hasTag("objective");
         if (objective)
         {

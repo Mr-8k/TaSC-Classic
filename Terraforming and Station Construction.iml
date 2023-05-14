@@ -7,6 +7,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="starsector-core 095" level="application" />
+    <orderEntry type="library" name="0.96 Starsector" level="application" />
   </component>
 </module>

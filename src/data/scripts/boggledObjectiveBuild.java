@@ -47,6 +47,7 @@ import org.json.JSONException;
 
 import java.awt.*;
 import java.io.IOException;
+import java.lang.Object;
 import java.util.*;
 import java.util.List;
 import java.lang.String;
@@ -218,7 +219,7 @@ public class boggledObjectiveBuild extends BaseCommandPlugin
             temp.addTag(tag);
         }
 
-        plugin.init(temp, (Object)null);
+        plugin.init(temp, null);
         boolean objective = this.entity.hasTag("objective");
         if (objective)
         {
